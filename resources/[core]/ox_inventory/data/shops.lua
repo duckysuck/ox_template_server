@@ -115,7 +115,7 @@ return {
 			{ name = 'WEAPON_FLASHLIGHT', price = 200 },
 			{ name = 'WEAPON_NIGHTSTICK', price = 100 },
 			{ name = 'WEAPON_PISTOL', price = 500 },
-			{ name = 'WEAPON_CARBINERIFLE', price = 1000 },
+			{ name = 'WEAPON_CARBINERIFLE', price = 1000, grade = 3 },
 			{ name = 'WEAPON_STUNGUN', price = 500 }
 		}, locations = {
 			vec3(451.51, -979.44, 30.68)
