@@ -1,7 +1,7 @@
-# DxHUD
+# dx_hud
 
 This started as a fork of Cosmo HUD but ended up being a complete rewrite.  
-DxHUD is an HUD for FiveM and ESX Legacy.
+dx_hud is an HUD for FiveM and ESX Legacy.
 
 ## Requirements
 
@@ -13,6 +13,24 @@ DxHUD is an HUD for FiveM and ESX Legacy.
 
 - pma-voice
 
+## Useful Snippets
+
+### I won't provide any support for the snippets below, it's up to you to understand if you need it or not or if you have any conflicts aswell.
+
+If you want to equal health among peds, run this client-side every tick.
+```lua
+if GetEntityMaxHealth(PlayerPedId()) ~= 200 then
+  SetEntityMaxHealth(PlayerPedId(), 200)
+  SetEntityHealth(PlayerPedId(), 200)
+end
+```
+
+If you want to disable health regen, run this client-side every tick.
+```lua
+  SetPlayerHealthRechargeMultiplier(PlayerId(), 0.0) 
+  SetPlayerHealthRechargeLimit(PlayerId(), 0.0)
+```
+
 ## Download & Installation
 
 
@@ -20,12 +38,12 @@ DxHUD is an HUD for FiveM and ESX Legacy.
 
 ```
 cd resources
-git clone https://github.com/0xDEMXN/dxhud.git
+git clone https://github.com/0xDEMXN/dx_hud.git
 ```
 
 ### Manually
 
-- Go to the [releases page](https://github.com/0xDEMXN/dxhud/releases "Releases page") and download the latest release
+- Go to the [releases page](https://github.com/0xDEMXN/dx_hud/releases "Releases page") and download the latest release
 - Place it inside the `resources` directory
 
 ### Installation
@@ -34,8 +52,12 @@ git clone https://github.com/0xDEMXN/dxhud.git
 - Add the resource to your `server.cfg` after dependencies to make sure it's started correctly at server startup:
 
 ```
-ensure dxhud
+ensure dx_hud
 ```
+
+## Screenshot(s)
+
+![dx_hud screenshot](https://user-images.githubusercontent.com/15928886/154711951-584adcec-5369-477b-8a4a-f3c006182881.png)
 
 ## Thanks to
 [nojdh](https://github.com/nojdh/) for Cosmo HUD
@@ -43,7 +65,7 @@ ensure dxhud
 <br>
 <table><tr><td><h3 align='center'>Legal Notices</h2></tr></td>
 <tr><td>
-DxHUD for ESX Legacy  
+dx_hud for ESX Legacy  
 
 Copyright © 2022  [Demxn](https://github.com/0xDEMXN)
 

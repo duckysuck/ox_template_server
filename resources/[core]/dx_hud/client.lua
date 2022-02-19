@@ -1,53 +1,48 @@
 local playerId = PlayerId()
 
-CreateThread(function()
-    while true do
-        if ESX.PlayerLoaded then
+local GeneralLoop = function()
+    CreateThread(function()
+        while ESX.PlayerLoaded do
             local ped = PlayerPedId()
 
             local underwaterTime = GetPlayerUnderwaterTimeRemaining(playerId) * 10
+
             local isDriving = IsPedInAnyVehicle(ped, true)
-            local speedMultiplier = isDriving and dx.metricSystem and 3.6 or 2.236936
-
             local veh = isDriving and GetVehiclePedIsUsing(ped, false)
-            local speed = isDriving and math.floor(GetEntitySpeed(veh) * speedMultiplier)
-            local maxspeed = isDriving and GetVehicleModelMaxSpeed(GetEntityModel(veh)) * speedMultiplier
-            local fuel = dx.showFuel and isDriving and GetVehicleFuelLevel(veh)
-
-            local voiceConnected = dx.showVoice and MumbleIsConnected()
-            local voiceTalking = dx.showVoice and NetworkIsPlayerTalking(playerId)
+            local speedMultiplier = isDriving and dx.metricSystem and 3.6 or 2.236936
 
             SendNUIMessage({ 
                 action = "general",
-                hp = GetEntityHealth(ped) - 100,
+                -- ped
+                hp = GetEntityHealth(ped) - 100, -- refer to README.md for a better health management
                 armour = GetPedArmour(ped),
-                oxygen = IsPedSwimmingUnderWater(ped) and underwaterTime >= 0 and underwaterTime or 100,
-                showSpeedo = isDriving,
-                showFuel = dx.showFuel and isDriving,
+                oxygen = IsPedSwimmingUnderWater(ped) and underwaterTime or 100,
+                -- vehicles
+                speedometer = isDriving and
+                {
+                    speed = math.floor(GetEntitySpeed(veh) * speedMultiplier),
+                    maxspeed = GetVehicleModelMaxSpeed(GetEntityModel(veh)) * speedMultiplier
+                },
+                fuel = dx.showFuel and isDriving and GetVehicleFuelLevel(veh),
+                -- voice
                 showVoice = dx.showVoice,
-                speed = speed,
-                maxspeed = maxspeed,
-                fuel = fuel,
-                voiceConnected = voiceConnected,
-                voiceTalking = voiceTalking,
+                voiceConnected = dx.showVoice and MumbleIsConnected(),
+                voiceTalking = dx.showVoice and NetworkIsPlayerTalking(playerId),
             })
 
             DisplayRadar(dx.persistentRadar or isDriving)
             SetRadarZoom(1150)
             SendNUIMessage({showUi = not IsPauseMenuActive()})
-        else
-            SendNUIMessage({showUi = false})
+
+            Wait(dx.generalRefreshRate)
         end
+        SendNUIMessage({showUi = false})
+    end)
+end
 
-        Wait(dx.generalRefreshRate)
-    end
-end)
-
-CreateThread(function()
-    while true do
-        if ESX.PlayerLoaded then
-            local ped = PlayerPedId()
-
+local StatusLoop = function()
+    CreateThread(function()
+        while ESX.PlayerLoaded do
             local hunger, thirst, stress = false, false, false
             local statusReady = false
 
@@ -57,59 +52,79 @@ CreateThread(function()
             TriggerEvent('esx_status:getStatus', 'stress', function(status) stress = status.val / 10000 end)
             end
 
-            repeat 
+            repeat
                 statusReady = dx.showStress and hunger and thirst and stress or hunger and thirst
-                Wait(100) 
+                Wait(100)
             until statusReady
 
             SendNUIMessage({
                 action = "status",
+                -- status
                 hunger = hunger,
                 thirst = thirst,
                 stress = dx.showStress and stress,
             })
+
+            Wait(dx.statusRefreshRate)
         end
+    end)
+end
 
-        Wait(dx.statusRefreshRate)
-    end
-end)
+local InitHUD = function ()
+    GeneralLoop()
+    StatusLoop()
+    SendNUIMessage({playerId = GetPlayerServerId(playerId)})
+end
 
-CreateThread(function()
-	RequestStreamedTextureDict("circlemap", false)
-	repeat Wait(100) until HasStreamedTextureDictLoaded("circlemap")
+if dx.circleMap then
+    CreateThread(function()
+        RequestStreamedTextureDict("circlemap", false)
+        repeat Wait(100) until HasStreamedTextureDictLoaded("circlemap")
 
-	AddReplaceTexture("platform:/textures/graphics", "radarmasksm", "circlemap", "radarmasksm")
+        AddReplaceTexture("platform:/textures/graphics", "radarmasksm", "circlemap", "radarmasksm")
 
-	SetMinimapClipType(1)
-    SetMinimapComponentPosition('minimap', 'L', 'B', -0.017, 0.021, 0.207, 0.32)
-    SetMinimapComponentPosition('minimap_mask', 'L', 'B', 0.06, 0.05, 0.132, 0.260)
-    SetMinimapComponentPosition('minimap_blur', 'L', 'B', 0.005, -0.01, 0.166, 0.257)
+        SetMinimapClipType(1)
+        SetMinimapComponentPosition('minimap', 'L', 'B', -0.017, 0.021, 0.207, 0.32)
+        SetMinimapComponentPosition('minimap_mask', 'L', 'B', 0.06, 0.05, 0.132, 0.260)
+        SetMinimapComponentPosition('minimap_blur', 'L', 'B', 0.005, -0.01, 0.166, 0.257)
 
-    SetRadarBigmapEnabled(true, false)
-    Wait(0)
-    SetRadarBigmapEnabled(false, false)
+        Wait(500)
+        SetRadarBigmapEnabled(true, false)
+        Wait(500)
+        SetRadarBigmapEnabled(false, false)
 
-    local minimap = RequestScaleformMovie("minimap")
-    repeat Wait(100) until HasScaleformMovieLoaded(minimap)
+        local minimap = RequestScaleformMovie("minimap")
+        repeat Wait(100) until HasScaleformMovieLoaded(minimap)
 
-    while true do
-        Wait(0)
-        BeginScaleformMovieMethod(minimap, "SETUP_HEALTH_ARMOUR")
-        ScaleformMovieMethodAddParamInt(3)
-        EndScaleformMovieMethod()
-    end
-end)
+        while true do
+            Wait(0)
+            BeginScaleformMovieMethod(minimap, "SETUP_HEALTH_ARMOUR")
+            ScaleformMovieMethodAddParamInt(3)
+            EndScaleformMovieMethod()
+        end
+    end)
+end
 
 AddEventHandler('pma-voice:setTalkingMode', function(mode)
     SendNUIMessage({action = "voice_range", voiceRange = mode})
 end)
 
 RegisterNetEvent('esx:playerLoaded')
-AddEventHandler('esx:playerLoaded', function(xPlayer)
+AddEventHandler('esx:playerLoaded', function()
  	ESX.PlayerLoaded = true
+    InitHUD()
 end)
 
 RegisterNetEvent('esx:onPlayerLogout')
 AddEventHandler('esx:onPlayerLogout', function()
 	ESX.PlayerLoaded = false
+end)
+
+AddEventHandler('onResourceStart', function(resourceName)
+    if (resourceName == GetCurrentResourceName()) then
+        if ESX.PlayerLoaded then
+            Citizen.Wait(50)
+            InitHUD()
+        end
+    end
 end)

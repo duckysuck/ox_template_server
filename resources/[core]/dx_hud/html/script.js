@@ -1,4 +1,4 @@
-$(document).ready(function () {
+document.addEventListener("DOMContentLoaded", function () {
   HealthIndicator = new ProgressBar.Circle("#HealthIndicator", {
     color: "rgb(0, 255, 100)",
     trailColor: "rgb(35,35,35)",
@@ -84,56 +84,58 @@ $(document).ready(function () {
 });
 
 window.addEventListener("message", function (event) {
-  let data = event.data;
+  var data = event.data;
 
   if (data.action == "general") {
     HealthIndicator.animate(data.hp / 100);
     ArmourIndicator.animate(data.armour / 100);
 
-    if (data.oxygen < 0) data.oxygen = 0;
-    OxygenIndicator.animate(data.oxygen / 100);
-
-    if (data.hp < 0) {
+    if (data.hp <= 0) {
       HealthIndicator.animate(0);
       HealthIndicator.trail.setAttribute("stroke", "red");
-      $("#HealthIcon").removeClass("fa-heart");
-      $("#HealthIcon").addClass("fa-skull");
-    } else if (data.hp > 0) {
+      document.getElementById("HealthIcon").classList.remove("fa-heart");
+      document.getElementById("HealthIcon").classList.add("fa-skull");
+    } else {
       HealthIndicator.trail.setAttribute("stroke", "rgb(35,35,35)");
-      $("#HealthIcon").removeClass("fa-skull");
-      $("#HealthIcon").addClass("fa-heart");
+      document.getElementById("HealthIcon").classList.remove("fa-skull");
+      document.getElementById("HealthIcon").classList.add("fa-heart");
     }
 
     if (data.armour == 0) {
-      $("#ArmourIndicator").fadeOut();
-    } else if (data.armour > 0) {
-      $("#ArmourIndicator").fadeIn();
+      document.getElementById("ArmourIndicator").style.display = "none";
+    } else {
+      document.getElementById("ArmourIndicator").style.display = "block";
     }
 
     if (data.oxygen < 100) {
-      $("#OxygenIndicator").fadeIn();
+      if (data.oxygen < 0) data.oxygen = 0;
+      OxygenIndicator.animate(data.oxygen / 100);
+
+      document.getElementById("OxygenIndicator").style.display = "block";
       if (data.oxygen < 25) {
         OxygenIndicator.path.setAttribute("stroke", "red");
-        $("#OxygenIcon").toggleClass("flash");
+        document.getElementById("OxygenIcon").classList.toggle("flash");
       } else {
         OxygenIndicator.path.setAttribute("stroke", "rgb(0, 140, 255)");
-        $("#OxygenIcon").removeClass("flash");
+        document.getElementById("OxygenIcon").classList.remove("flash");
       }
     } else if (data.oxygen == 100) {
-      $("#OxygenIndicator").fadeOut();
+      document.getElementById("OxygenIndicator").style.display = "none";
     }
 
     if (data.showVoice == true) {
-      $("#VoiceIndicator").fadeIn();
+      document.getElementById("VoiceIndicator").style.display = "block";
       if (data.voiceConnected == false) {
         VoiceIndicator.path.setAttribute("stroke", "red");
         VoiceIndicator.trail.setAttribute("stroke", "red");
-        $("#VoiceIcon").removeClass("fa-microphone");
-        $("#VoiceIcon").addClass("fa-times");
+
+        document.getElementById("VoiceIcon").classList.remove("fa-microphone");
+        document.getElementById("VoiceIcon").classList.add("fa-times");
       } else if (data.voiceConnected == true) {
         VoiceIndicator.trail.setAttribute("stroke", "rgb(35,35,35)");
-        $("#VoiceIcon").removeClass("fa-times");
-        $("#VoiceIcon").addClass("fa-microphone");
+
+        document.getElementById("VoiceIcon").classList.remove("fa-times");
+        document.getElementById("VoiceIcon").classList.add("fa-microphone");
         if (data.voiceTalking == true) {
           VoiceIndicator.path.setAttribute("stroke", "yellow");
         } else if (data.voiceTalking == false) {
@@ -142,55 +144,64 @@ window.addEventListener("message", function (event) {
       }
     }
 
-    if (data.showSpeedo == true) {
-      let speedoLevel = data.speed / (data.maxspeed * 1.3);
+    if (data.speedometer) {
+      var speedoLevel =
+        data.speedometer.speed / (data.speedometer.maxspeed * 1.3);
       if (speedoLevel > 1) speedoLevel = 1;
       SpeedIndicator.animate(speedoLevel);
+      document.getElementById("SpeedIndicator").style.display = "block";
 
-      $("#SpeedIndicator").fadeIn();
-      if (data.speed > 0) {
-        $("#SpeedIcon").removeClass("fa-tachometer-alt");
-        $("#SpeedIcon").text(data.speed);
-      } else if (data.speed == 0) {
-        $("#SpeedIcon").addClass("fa-tachometer-alt");
-        $("#SpeedIcon").empty();
+      if (data.speedometer.speed >= 1) {
+        document
+          .getElementById("SpeedIcon")
+          .classList.remove("fa-tachometer-alt");
+        document.getElementById("SpeedIcon").textContent =
+          data.speedometer.speed;
+      } else {
+        document.getElementById("SpeedIcon").classList.add("fa-tachometer-alt");
+        document.getElementById("SpeedIcon").textContent = "";
       }
-    } else if (data.showSpeedo == false) {
-      $("#SpeedIndicator").fadeOut();
+    } else {
+      SpeedIndicator.animate(0);
+      document.getElementById("SpeedIndicator").style.display = "none";
     }
 
-    if (data.showFuel == true) {
+    if (data.fuel !== false && data.fuel >= 0) {
       FuelIndicator.animate(data.fuel / 100);
+      document.getElementById("FuelIndicator").style.display = "block";
+
       if (data.fuel < 0.2) {
         FuelIndicator.path.setAttribute("stroke", "red");
       } else if (data.fuel > 0.2) {
         FuelIndicator.path.setAttribute("stroke", "white");
       }
-      $("#FuelIndicator").fadeIn();
-    } else if (data.showFuel == false) {
-      $("#FuelIndicator").fadeOut();
+    } else {
       FuelIndicator.animate(0);
+      document.getElementById("FuelIndicator").style.display = "none";
     }
   }
 
   if (data.action == "status") {
     HungerIndicator.animate(data.hunger / 100);
     ThirstIndicator.animate(data.thirst / 100);
-    
-    if (data.stress) {
+
+    if (data.stress > 5) {
       StressIndicator.animate(data.stress / 100);
-      $("#StressIndicator").fadeIn();
-      if (data.stress > 75) {
-        $("#StressIcon").toggleClass("flash");
-      }
+      document.getElementById("StressIndicator").style.display = "block";
+
+      if (data.stress > 50)
+        document.getElementById("StressIcon").classList.toggle("flash");
+    } else {
+      StressIndicator.animate(0);
+      document.getElementById("StressIndicator").style.display = "none";
     }
 
     if (data.thirst < 25) {
-      $("#ThirstIcon").toggleClass("flash");
+      document.getElementById("ThirstIcon").classList.toggle("flash");
     }
 
     if (data.hunger < 25) {
-      $("#HungerIcon").toggleClass("flash");
+      document.getElementById("HungerIcon").classList.toggle("flash");
     }
   }
 
@@ -213,9 +224,15 @@ window.addEventListener("message", function (event) {
     VoiceIndicator.animate(data.voiceRange / 100);
   }
 
+  if (data.playerId) {
+    document.getElementById("ID").textContent = data.playerId;
+  }
+
   if (data.showUi == true) {
-    $(".container").show();
+    document.querySelector(".Container").style.display = "block";
+    document.querySelector(".Logo").style.display = "block";
   } else if (data.showUi == false) {
-    $(".container").hide();
+    document.querySelector(".Container").style.display = "none";
+    document.querySelector(".Logo").style.display = "none";
   }
 });
