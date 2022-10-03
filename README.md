@@ -1,5 +1,5 @@
 # OX Base Template Server
-This is the new home of Judd's "ox_base_template_server", as he discontinued his repo I will still be contributing to this one for everyone. This repo contains resources for a "base" ESX server utilizing oxmysql, ox_inventory, NPWD, es_extended (ox version), esx_multicharacter (ox supported version) as well as many other "base" resources to get you started.
+This was spawned from "ox_base_template_server", as he discontinued his repo I will still be contributing to this one. This repo contains resources for a "base" ESX server utilizing oxmysql, ox_inventory, NPWD, es_extended (ox version), esx_multicharacter (ox supported version) as well as many other "base" resources to get you started.
 
 ```diff
 - THIS IS NOT A FULL SERVER! Only a base to get you started.
